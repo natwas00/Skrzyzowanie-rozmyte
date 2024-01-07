@@ -7,11 +7,12 @@ def create_FS():
     FS = FuzzySystem()
 
     # Zamodelowanie zmiennej lingwistycznej "liczba samochodow"
-    C1 = TrapezoidFuzzySet(0, 0, 4, 8, term="low")
+    C0 = TriangleFuzzySet(0, 0, 1, term="none")
+    C1 = TrapezoidFuzzySet(0, 1, 4, 8, term="low")
     C2 = TriangleFuzzySet(4, 8, 12, term="medium")
     C3 = TriangleFuzzySet(8, 12, 32, term="high")
     C4 = TriangleFuzzySet(12, 32, 32, term="very_high")
-    FS.add_linguistic_variable("number_of_cars", LinguisticVariable([C1, C2, C3, C4], universe_of_discourse=[0, 32]))
+    FS.add_linguistic_variable("number_of_cars", LinguisticVariable([C0, C1, C2, C3, C4], universe_of_discourse=[0, 32]))
 
     # Zamodelowanie zmiennej lingwistycznej "czas od poprzedniego zielonego"
     T1 = TrapezoidFuzzySet(0, 0, 15, 45, term="short")
@@ -20,14 +21,17 @@ def create_FS():
     FS.add_linguistic_variable("waiting_time", LinguisticVariable([T1, T2, T3], universe_of_discourse=[0, 150]))
 
     # Zamodelowanie sterujacej zmiennej lingwistycznej "priorytet"
-    P1 = TriangleFuzzySet(0, 0, 0.5, term="low")
+    P0 = TriangleFuzzySet(0, 0, 0.01, term="none")
+    P1 = TriangleFuzzySet(0, 0.01, 0.5, term="low")
     P2 = TriangleFuzzySet(0, 0.5, 1, term="medium")
     P3 = TriangleFuzzySet(0.5, 0.8, 1, term="high")
     P4 = TriangleFuzzySet(0.8, 1, 1, term="very_high")
-    FS.add_linguistic_variable("priority", LinguisticVariable([P1, P2, P3, P4], universe_of_discourse=[0, 1]))
+    FS.add_linguistic_variable("priority", LinguisticVariable([P0, P1, P2, P3, P4], universe_of_discourse=[0, 1]))
 
     # Zdefiniowanie zestawu regul
     FS.add_rules([
+
+        "IF (number_of_cars IS none) THEN (priority IS none)",
 
         "IF (number_of_cars IS low) AND (waiting_time IS short) THEN (priority IS low)",
 
@@ -88,7 +92,7 @@ max_cars = 4
 light_duration = 15
 
 # Petla symulujaca skrzyzowanie i testujaca sterownik
-for i in range(450):
+"""for i in range(450):
     # Pojawienie sie nowych samochodow na skrzyzowaniu
     m = random.randint(min_cars, max_cars)
     for j in range(m):
@@ -130,6 +134,6 @@ for i in range(450):
     print("B -- cars: ", dirB.cars, " waiting_time: ", dirB.time, " priority: ", dirB.priority, " green: ", dirB.state)
     print("C -- cars: ", dirC.cars, " waiting_time: ", dirC.time, " priority: ", dirC.priority, " green: ", dirC.state)
     print("D -- cars: ", dirD.cars, " waiting_time: ", dirD.time, " priority: ", dirD.priority, " green: ", dirD.state)
-
+"""
 # Statystyki koncowe - liczba samochodow, jakie przejechaly przez skrzyzowanie z poszczegolnych kierunkow
 print("Passed cars -- A: ", dirA.passed, " -- B: ", dirB.passed, " -- C: ", dirC.passed, " --D: ", dirD.passed)

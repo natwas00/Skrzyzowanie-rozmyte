@@ -3,6 +3,7 @@ import time
 import threading
 import pygame
 import sys
+from simpful import *
 from sterownik_v1_0 import create_FS
 noOfSignals = 4
 stoppingGap = 15
