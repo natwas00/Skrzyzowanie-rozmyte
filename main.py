@@ -3,7 +3,7 @@ import time
 import threading
 import pygame
 import sys
-from simpful import *
+import statistics
 from sterownik_v1_0 import create_FS
 noOfSignals = 4
 stoppingGap = 15
@@ -13,20 +13,23 @@ currentGreen = 0
 nextGreen = (currentGreen+1)%noOfSignals
 currentYellow = False
 signalText = ["","","",""]
-x = {'right':[-80,-80,-80], 'down':[710,745,780], 'left':[1400,1400,1400], 'up':[590,625,660]}
-y = {'right':[360,394,430], 'down':[-80,-80,-80], 'left':[470,505,540], 'up':[800,800,800]}
+x = {'right':[-80,-80,-80], 'down':[590,625,660], 'left':[1400,1400,1400], 'up':[710,745,780]}
+y = {'right':[470,505,540], 'down':[-80,-80,-80], 'left':[360,394,430], 'up':[800,800,800]}
 speeds = {'car':2.25, 'bus':1.8, 'truck':1.8, 'bike':2.5}
 vehicles = {'right': {0:[], 1:[], 2:[],'cars':0, 'crossed':0, "time":0, 'index':0}, 'down': {0:[], 1:[], 2:[],'cars':0, 'crossed':0, "time":0, 'index':1}, 'left': {0:[], 1:[], 2:[], 'cars':0, 'crossed':0, "time":0, 'index':2}, 'up': {0:[], 1:[], 2:[],'cars':0, 'crossed':0, "time":0, 'index':3}}
 priorities = [0,0,0,0]
+waiting_time_dir = {'right':[0],'down':[0],'left':[0],'up':[0]}
 directionNumbers = {0:'right', 1:'down', 2:'left', 3:'up'}
 defaultStop = {'right': 550, 'down': 320, 'left': 840, 'up': 600}
 stopLines = {'right': 560, 'down': 330, 'left': 830, 'up': 590}
 vehicleTypes = {0:'car', 1:'bus', 2:'truck', 3:'bike'}
-signalCoods = [(560,230),(810,230),(810,570),(560,570)]
-signalTimerCoods = [(560,210),(810,210),(810,550),(560,550)]
-signalCarsCoods = [(430,280),(850,280),(850,600),(430,600)]
-signalTimeCoods = [(430,250),(850,250),(850,630),(430,630)]
-signalPriorityCoods = [(430,220),(850,220),(850,660),(430,660)]
+signalCoods = [(810,230),(810,570),(560,570), (560,230)]
+signalTimerCoods = [(560,550),(810,550),(810,210),(560,210)]
+signalCarsCoods = [(430,600),(430,280),(850,280),(850,600)]
+signalTimeCoods = [(430,630),(430,250),(850,250),(850,630)]
+signalPriorityCoods = [(430,660),(430,220), (850,220), (850,660)]
+signalMeanTimeCoods = [(430,690),(430,190), (850,190), (850,690)]
+wholeMean = (1300,20)
 pygame.init()
 simulation = pygame.sprite.Group()
 ind = 0
@@ -61,7 +64,6 @@ def green():
             vehicles[directionNumbers[(currentGreen + 3) % 4]]['time'] = vehicles[directionNumbers[(currentGreen + 3) % 4]]['time'] + 1
             for dir in vehicles:
                 priorities[vehicles[dir]['index']]=calculate_priority(vehicles[dir]['cars'], vehicles[dir]['time'])
-        print(priorities)
         max_p = max(priorities)
         index_max = priorities.index(max_p)
 
@@ -128,6 +130,7 @@ class Vehicle(pygame.sprite.Sprite):
         self.x = x[direction][lane]
         self.y = y[direction][lane]
         self.crossed = 0
+        self.waiting_time=0
         vehicles[direction][lane].append(self)
         self.index = len(vehicles[direction][lane]) - 1
         path = "images/" + direction + "/" + vehicleClass + ".png"
@@ -194,22 +197,35 @@ class Vehicle(pygame.sprite.Sprite):
 def generateVehicles():
     while(True):
         global vehicles
-
+        probability = [a,a+b,a+b+c,a+b+c+d]
         vehicle_type = random.randint(0,3)
         lane_number = random.randint(0,2)
-        direction_number = random.randint(0,3)
+        number = random.random()
+        if number < probability[0]:
+            direction_number = 0
+        elif number>=probability[0] and number<probability[1]:
+            direction_number = 1
+        elif number>=probability[1] and number<probability[2]:
+            direction_number = 2
+        elif number >= probability[2]:
+            direction_number = 3
 
         vehicles[directionNumbers[direction_number]]['cars']= vehicles[directionNumbers[direction_number]]['cars']+1
-        vehicles['right']['cars'] = vehicles['right']['cars'] + 1
-#
-        Vehicle(lane_number, vehicleTypes[vehicle_type], 0, 'right')
+
         Vehicle(lane_number, vehicleTypes[vehicle_type], direction_number, directionNumbers[direction_number])
 
         time.sleep(1)
 
-
-
-
+def calculate_the_average():
+    global waiting_time_dir,simulation
+    while True:
+        waiting_time_dir2 = {'right':[0],'down':[0],'left':[0],'up':[0]}
+        for vehicle in simulation:
+            if vehicle.crossed == 0 and currentGreen!=vehicle.direction_number and (currentGreen+2)%4!=vehicle.direction_number:
+                vehicle.waiting_time +=1
+            waiting_time_dir2[vehicle.direction].append(vehicle.waiting_time)
+        waiting_time_dir = waiting_time_dir2.copy()
+        time.sleep(1)
 
 
 fs = create_FS()
@@ -232,11 +248,27 @@ yellowSignal = pygame.image.load('images/signals/yellow.png')
 greenSignal = pygame.image.load('images/signals/green.png')
 font = pygame.font.Font(None, 30)
 
-
+if len(sys.argv) == 5:
+    a = float(sys.argv[1])
+    b = float(sys.argv[2])
+    c = float(sys.argv[3])
+    d = float(sys.argv[4])
+else:
+    a = 0.25
+    b = 0.25
+    c = 0.25
+    d = 0.25
+print(a)
+print(b)
+print(c)
+print(d)
 thread2 = threading.Thread(name="generateVehicles", target=generateVehicles, args=())  # Generating vehicles
 thread2.daemon = True
 thread2.start()
 
+thread3 = threading.Thread(name="calculate_the_average", target=calculate_the_average, args=())
+thread3.daemon = True
+thread3.start()
 while True:
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
@@ -268,6 +300,7 @@ while True:
     screen.blit(signalTexts[currentGreen],signalTimerCoods[currentGreen])
     signalTexts[(currentGreen+2)%4] = font.render(str(signalText[(currentGreen+2)%4]), True, (0, 0, 0), (255, 255, 255))
     screen.blit(signalTexts[(currentGreen+2)%4],signalTimerCoods[(currentGreen+2)%4])
+    timeDir = []
     for dir in directionNumbers:
         carsq = font.render("cars:"+str(vehicles[directionNumbers[dir]]['cars']), True, (0, 0, 0),(255, 255, 255))
         screen.blit(carsq, signalCarsCoods[dir])
@@ -275,6 +308,11 @@ while True:
         screen.blit(timeq, signalTimeCoods[dir])
         priorityq = font.render("priority:"+str(round(priorities[dir],2)), True, (0, 0, 0),(255, 255, 255))
         screen.blit(priorityq, signalPriorityCoods[dir])
+        timeDir.append(round(statistics.mean(waiting_time_dir[directionNumbers[dir]]),2))
+        meanq = font.render("mean:" + str(round(statistics.mean(waiting_time_dir[directionNumbers[dir]]),2)), True, (0, 0, 0), (255, 255, 255))
+        screen.blit(meanq, signalMeanTimeCoods[dir])
+    meanq = font.render("mean:" + str(round(statistics.mean(timeDir), 2)), True,(0, 0, 0), (255, 255, 255))
+    screen.blit(meanq, wholeMean)
 
     if (currentYellow == False):
         signalTexts[(currentGreen+1)%4] = font.render("", True, (0, 0, 0), (255, 255, 255))
