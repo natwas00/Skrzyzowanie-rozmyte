@@ -72,9 +72,12 @@ class Direction:
 
     # Procedura obliczajaca aktualny priorytet dla kierunku jazdy
     def calculate_priority(self):
-        self.fs.set_variable("number_of_cars", self.cars)
-        self.fs.set_variable("waiting_time", self.time)
-        self.priority = self.fs.inference()["priority"]
+        if self.cars == 0:
+            self.priority = 0.0
+        else:
+            self.fs.set_variable("number_of_cars", self.cars)
+            self.fs.set_variable("waiting_time", self.time)
+            self.priority = self.fs.inference()["priority"]
 
 # Inicjalizacja skrzyzowania
 dirA = Direction("A", True, "C")
