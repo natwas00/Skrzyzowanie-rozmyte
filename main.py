@@ -198,21 +198,22 @@ def generateVehicles():
     while(True):
         global vehicles
         probability = [a,a+b,a+b+c,a+b+c+d]
-        vehicle_type = random.randint(0,3)
-        lane_number = random.randint(0,2)
-        number = random.random()
-        if number < probability[0]:
-            direction_number = 0
-        elif number>=probability[0] and number<probability[1]:
-            direction_number = 1
-        elif number>=probability[1] and number<probability[2]:
-            direction_number = 2
-        elif number >= probability[2]:
-            direction_number = 3
+        for i in range(number_of_cars):
+            vehicle_type = random.randint(0,3)
+            lane_number = random.randint(0,2)
+            number = random.random()
+            if number < probability[0]:
+                direction_number = 0
+            elif number>=probability[0] and number<probability[1]:
+                direction_number = 1
+            elif number>=probability[1] and number<probability[2]:
+                direction_number = 2
+            elif number >= probability[2]:
+                direction_number = 3
 
-        vehicles[directionNumbers[direction_number]]['cars']= vehicles[directionNumbers[direction_number]]['cars']+1
+            vehicles[directionNumbers[direction_number]]['cars']= vehicles[directionNumbers[direction_number]]['cars']+1
 
-        Vehicle(lane_number, vehicleTypes[vehicle_type], direction_number, directionNumbers[direction_number])
+            Vehicle(lane_number, vehicleTypes[vehicle_type], direction_number, directionNumbers[direction_number])
 
         time.sleep(1)
 
@@ -248,7 +249,7 @@ yellowSignal = pygame.image.load('images/signals/yellow.png')
 greenSignal = pygame.image.load('images/signals/green.png')
 font = pygame.font.Font(None, 30)
 
-if len(sys.argv) == 5:
+if len(sys.argv) >= 5:
     a = float(sys.argv[1])
     b = float(sys.argv[2])
     c = float(sys.argv[3])
@@ -258,6 +259,10 @@ else:
     b = 0.25
     c = 0.25
     d = 0.25
+if len(sys.argv) == 6:
+    number_of_cars = int(sys.argv[5])
+else:
+    number_of_cars = 1
 print(a)
 print(b)
 print(c)
