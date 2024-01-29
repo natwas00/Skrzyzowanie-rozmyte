@@ -21,7 +21,7 @@ def create_FS():
 
     # Zamodelowanie sterujacej zmiennej lingwistycznej "priorytet"
     P1 = TriangleFuzzySet(0, 0, 0.5, term="low")
-    P2 = TriangleFuzzySet(0, 0.5, 1, term="medium")
+    P2 = TriangleFuzzySet(0, 0.5, 0.8, term="medium")
     P3 = TriangleFuzzySet(0.5, 0.8, 1, term="high")
     P4 = TriangleFuzzySet(0.8, 1, 1, term="very_high")
     FS.add_linguistic_variable("priority", LinguisticVariable([P1, P2, P3, P4], universe_of_discourse=[0, 1]))
