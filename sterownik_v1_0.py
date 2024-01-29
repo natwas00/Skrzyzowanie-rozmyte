@@ -7,12 +7,11 @@ def create_FS():
     FS = FuzzySystem()
 
     # Zamodelowanie zmiennej lingwistycznej "liczba samochodow"
-    C0 = TriangleFuzzySet(0, 0, 1, term="none")
-    C1 = TrapezoidFuzzySet(0, 1, 4, 8, term="low")
+    C1 = TrapezoidFuzzySet(0, 0, 4, 8, term="low")
     C2 = TriangleFuzzySet(4, 8, 12, term="medium")
     C3 = TriangleFuzzySet(8, 12, 32, term="high")
     C4 = TriangleFuzzySet(12, 32, 32, term="very_high")
-    FS.add_linguistic_variable("number_of_cars", LinguisticVariable([C0, C1, C2, C3, C4], universe_of_discourse=[0, 32]))
+    FS.add_linguistic_variable("number_of_cars", LinguisticVariable([C1, C2, C3, C4], universe_of_discourse=[0, 32]))
 
     # Zamodelowanie zmiennej lingwistycznej "czas od poprzedniego zielonego"
     T1 = TrapezoidFuzzySet(0, 0, 15, 45, term="short")
@@ -21,17 +20,14 @@ def create_FS():
     FS.add_linguistic_variable("waiting_time", LinguisticVariable([T1, T2, T3], universe_of_discourse=[0, 150]))
 
     # Zamodelowanie sterujacej zmiennej lingwistycznej "priorytet"
-    P0 = TriangleFuzzySet(0, 0, 0.01, term="none")
-    P1 = TriangleFuzzySet(0, 0.01, 0.5, term="low")
+    P1 = TriangleFuzzySet(0, 0, 0.5, term="low")
     P2 = TriangleFuzzySet(0, 0.5, 1, term="medium")
     P3 = TriangleFuzzySet(0.5, 0.8, 1, term="high")
     P4 = TriangleFuzzySet(0.8, 1, 1, term="very_high")
-    FS.add_linguistic_variable("priority", LinguisticVariable([P0, P1, P2, P3, P4], universe_of_discourse=[0, 1]))
+    FS.add_linguistic_variable("priority", LinguisticVariable([P1, P2, P3, P4], universe_of_discourse=[0, 1]))
 
     # Zdefiniowanie zestawu regul
     FS.add_rules([
-
-        "IF (number_of_cars IS none) THEN (priority IS none)",
 
         "IF (number_of_cars IS low) AND (waiting_time IS short) THEN (priority IS low)",
 

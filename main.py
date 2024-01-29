@@ -36,9 +36,12 @@ ind = 0
 
 def calculate_priority(cars, time):
     global fs
-    fs.set_variable("number_of_cars", cars)
-    fs.set_variable("waiting_time", time)
-    priority = fs.inference()["priority"]
+    if cars == 0:
+        priority = 0
+    else:
+        fs.set_variable("number_of_cars", cars)
+        fs.set_variable("waiting_time", time)
+        priority = fs.inference()["priority"]
     return priority
 
 
